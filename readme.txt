@@ -1,3 +1,3 @@
-// npm id
+// npm i
 
 npm run start
