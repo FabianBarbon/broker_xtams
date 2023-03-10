@@ -1,0 +1,1 @@
+importante crear el siguiente procedimiento almacenado en la base de datos del c4: HowCameras_site()

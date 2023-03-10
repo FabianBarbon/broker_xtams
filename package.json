@@ -1,0 +1,23 @@
+{
+  "name": "node_mqtt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "^2.29.4",
+    "mqtt": "^4.3.7",
+    "mysql": "^2.18.1",
+    "mysql2-promise": "^0.1.4",
+    "util": "^0.12.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}

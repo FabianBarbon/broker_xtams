@@ -1,0 +1,229 @@
+# traer todo de la tabla xtam novedades
+delimiter //
+	CREATE PROCEDURE sel_xtamNews
+    (
+
+    )
+    BEGIN
+		select xn.Id_xtam_news, x.descripcion as sitio, x.ipserver, ti.Nombre as Tipo ,c.Nombre as Categoria,xn.valor, xn.fecha   from xtamtelemetria.xtam_news xn
+		inner join xtams x on xn.Fk_xtam = x.id
+		inner join categorias c on xn.Fk_categoria = c.Id_categoria
+		inner join tipos ti on c.Fk_tipo = ti.Id_tipo;
+        
+    END
+//
+call sel_xtamNews ()
+
+# traer todo de la tabla xtam novedades por sitio
+delimiter //
+	CREATE PROCEDURE xtamNews_Site
+    (
+		in _sitio varchar (255)
+    )
+    BEGIN
+		select xn.Id_xtam_news, x.descripcion as sitio, x.ipserver, ti.Nombre as Tipo ,c.Nombre as Categoria,xn.valor, xn.fecha   from xtamtelemetria.xtam_news xn
+		inner join xtams x on xn.Fk_xtam = x.id
+		inner join categorias c on xn.Fk_categoria = c.Id_categoria
+		inner join tipos ti on c.Fk_tipo = ti.Id_tipo 
+        where x.descripcion like  CONCAT('%', _sitio , '%');
+    END
+//
+
+ call xtamNews_Site ('BRISAS')
+ 
+ 
+# traer todo por rango de fechas
+delimiter //
+	CREATE PROCEDURE xtamNews_By_Dates
+    (
+		in _fecha1 varchar (255),
+        in _fecha2 varchar (255)
+    )
+    BEGIN
+		select * from xtamtelemetria.xtam_news
+		where fecha between cast( _fecha1 as date) and cast(_fecha2 as date);
+    END
+//
+
+call xtamNews_By_Dates ('2022-07-01','2022-07-08')
+ 
+ 
+  
+# traer por valor
+delimiter //
+	CREATE PROCEDURE xtamNews_By_Values
+    (
+		in _value varchar (255)
+    )
+    BEGIN
+		select * from xtamtelemetria.xtam_news
+		where valor  like  CONCAT('%', _value , '%');
+    END
+//
+
+
+call xtamNews_By_Values ('100')
+
+
+
+# Eliminar por id xtam_news
+delimiter //
+	CREATE PROCEDURE xtamNews_Delete
+    (
+		in _id int 
+    )
+    BEGIN
+		Delete from  xtamtelemetria.xtam_news where Id_xtam_news = _id;
+    END
+//
+
+call xtamNews_Delete (6)
+
+# existe el xtam por id
+delimiter //
+CREATE  PROCEDURE exist_xtam
+(
+	in _id bigint
+)
+BEGIN
+		select id,descripcion,ipsimcard from xtams
+        where id = _id ;
+END
+//
+
+call exist_xtam(1)
+
+# existe el xtam por categoria
+delimiter //
+CREATE  PROCEDURE exist_category
+(
+	in _id int
+)
+BEGIN
+		select Id_categoria,Nombre,Descripcion,Fk_tipo from categorias
+        where Id_categoria  = _id;
+END
+//
+
+call exist_category(2)
+
+
+#insert xtam news
+delimiter //
+CREATE  PROCEDURE insert_xtamNew
+(
+	in _Fk_xtam bigint,
+    in _Fk_category int,
+    in _value decimal(5,2)
+)
+BEGIN
+		insert into xtam_news (Fk_xtam,Fk_categoria,valor)
+        values (_Fk_xtam,_Fk_category,_value);
+END
+//
+
+
+call insert_xtamNew (12,4,5115)
+
+
+#tabla auditoria  xtam news
+create table audit_xtamNews
+(
+	Id_xtam_news int ,
+	Fk_xtam bigint ,
+	Fk_categoria int, 
+	valor decimal(5,2), 
+	fecha_creacion timestamp,
+    fecha_eliminacion timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+
+/*)
+
+#auditar tabla xtam news
+DELIMITER $$
+
+CREATE TRIGGER triger_auditXtamNews
+BEFORE DELETE
+ON xtam_news FOR EACH ROW
+BEGIN
+    INSERT INTO audit_xtamnews  (Id_xtam_news,Fk_xtam,Fk_categoria,valor,fecha_creacion)
+    VALUES(OLD.Id_xtam_news,OLD.Fk_xtam,OLD.Fk_categoria,OLD.valor,OLD.fecha);
+END
+DELIMITER $$
+DELIMITER ;
+
+call xtamNews_Delete (6)
+*/
+
+
+#update  xtam news
+delimiter //
+CREATE  PROCEDURE update_xtamNew
+(
+	in Id_xtam_news int,
+	in _Fk_xtam bigint,
+    in _Fk_category int,
+    in _value decimal(5,2)
+)
+BEGIN
+		UPDATE xtam_news
+		SET valor = _value, Fk_xtam  = _Fk_xtam, Fk_categoria = _Fk_category
+		WHERE Id_xtam_news = Id_xtam_news;
+END
+//
+
+CALL update_xtamNew ( 1, 1,1, 44.44 )
+
+
+# traer el ultimo registro por fecha de insercion
+delimiter //
+CREATE  PROCEDURE last_xtamNew
+(
+	in _id_modulo varchar(255)
+)
+BEGIN
+SELECT  DATE_FORMAT(date (fecha), '%d/%m/%Y') , time(fecha) FROM xtamtelemetria.xtam_news;
+		SELECT x.id,x.ipserver,x.id_modulo, DATE_FORMAT(date (fecha), '%d/%m/%Y') as fecha , time(xn.fecha) as hora ,xn.Id_xtam_news  FROM xtamtelemetria.xtam_news  xn
+INNER JOIN xtams x on x.id  = xn.Fk_xtam
+        where x.id_modulo =  _id_modulo order by fecha desc limit 1 ;
+END
+//
+
+CALL last_xtamNew ("MQTT5")
+
+
+
+delimiter //
+CREATE  PROCEDURE calculate_id(
+	in _id_module varchar(255)
+)
+BEGIN
+		select id,descripcion,ipsimcard,id_modulo from xtams
+        where id_modulo = _id_module ;
+END
+
+//
+
+call calculate_id ("MQTT3")
+
+
+call calculate_id ("MQTT59")
+
+
+
+#calcular temperatura
+delimiter //
+CREATE  PROCEDURE calculate_temperature()
+BEGIN
+		select  avg(xxx.valor) as vall ,xxx.Fk_xtam  , date(xxx.fecha) from (
+			SELECT valor ,Fk_xtam  , fecha , date(fecha)
+			FROM xtamtelemetria.xtam_news 
+			WHERE  Fk_categoria = 4  AND date(fecha) BETWEEN date_add(CURDATE(), INTERVAL -7 DAY)  AND CURDATE() ) xxx
+	where date(xxx.fecha) BETWEEN date_add(CURDATE(), INTERVAL -7 DAY)  AND CURDATE()
+	group by  xxx.Fk_xtam    order by vall desc  limit 10;
+END
+
+
+
+
+call calculate_temperature()

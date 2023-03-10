@@ -1,0 +1,12 @@
+
+ //xtam 11111111111
+ temp -> 4
+ hum  -> 5
+ Wop  -> 6
+ Vop  -> 12
+ Wbt  -> 13
+ Vbt  -> 14
+ bat  -> 9
+ red  -> 15
+ Rdb  -> 10
+ gps  -> 11
