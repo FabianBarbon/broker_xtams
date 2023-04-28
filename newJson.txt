@@ -1,0 +1,46 @@
+//en este archivo se especifican las variables y los tipos de dato
+//con el objeto  de saber con precision que variable a que se refiere y cual es su tipado
+
+para tener en cuenta los siguientes acronimos:
+
+
+//Telemetria 
+    temp        --> 4                            //temperatura xtam
+    hum         --> 5
+    ACC1	    --> 19                           //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
+    ACC2	    --> 20                            //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
+    ACC3        --> 21                            //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
+    Vop5V	    --> 12
+    Wop5V       --> 6
+    Vop12V	    --> 17
+    Wop12V	    --> 18
+    bat         --> 9
+    red         --> 15                             //TIPO DE RED 2,3,4
+    Rdb         --> 10                              //VALOR DE LA SENAL
+    IPRed	    --> 22
+    HoraRed	    --> 23
+
+
+//Xtam
+    CPU	        --> 24                              //porcentaje de uso
+    GPU	        --> 25
+    RAM	        --> 26
+    TempCPU	    --> 27
+    TempGPU	    --> 28
+    DiskUse1	--> 29
+    DiskUse2	--> 30
+    FlujosIN
+        INSTC1                                      //Estado del servicio (RUN, STOP, OFF)
+        INSTC2
+        INSTC3
+        INSTC4
+    Recording
+        RDC1
+        RDC2
+        RDC3
+        RDC4
+    Services
+        FTP
+        APACHE
+        PingXC
+        PingRobustel

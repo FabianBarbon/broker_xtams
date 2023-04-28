@@ -15,6 +15,7 @@
     "mqtt": "^4.3.7",
     "mysql": "^2.18.1",
     "mysql2-promise": "^0.1.4",
+    "parse-int": "^1.0.3",
     "util": "^0.12.4"
   },
   "devDependencies": {
