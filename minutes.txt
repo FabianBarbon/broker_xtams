@@ -1,1 +1,1 @@
-{ "Minutes": 5}
+{ "Minutes": 2}

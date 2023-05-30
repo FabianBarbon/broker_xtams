@@ -1,7 +1,7 @@
 // constantes
 const UNDEFINNED = undefined; 
 const CEROO = 0; 
-
+const NULLL = null;
 // Importacion de librerias
 var mysql = require('mysql');
 const util = require('util');
@@ -18,18 +18,24 @@ var con = mysql.createConnection({
     database: 'xtamtelemetria'
 });
 
+// create conexion con la base de datos de abajo *(c4)
+//crear conexion mysql xtamDb Abajo o c4.
+var con_xtamDB = mysql.createConnection({
+    host: "xtam-video-dev.cchfdbjtfv0t.us-east-2.rds.amazonaws.com",   //Cambiar por la ip del C4
+    user: "admin",
+    password: '723$YAFsemneujgJYjRDBHA&maNH4eTA',
+    database: 'xtamvideo-dev'
+});
+
+
 /*  PROCESO PARA CALCULAR Y FORMATEAR LA FECHA DEL SERVIDOR  */
 function date_server() {
-    try {
-        var hoy = new Date();
-        var fecha2 = hoy.getDate() + '-' + (hoy.getMonth() + 1) + '-' + hoy.getFullYear();date_server
-        fecha2 = fecha2.replaceAll("-", "/")
-        var hora2 = hoy.getHours() + ':' + hoy.getMinutes() + ':' + hoy.getSeconds();
-        var fecha_server = `${fecha2} ${hora2}`;
-        return fecha_server;
-    } catch (error) {
-        saveLog (`Exepcion producida en la funcion : date_server, fecha:${date_server()}`);        
-    }
+    var hoy = new Date();
+    var fecha2 = hoy.getDate() + '-' + (hoy.getMonth() + 1) + '-' + hoy.getFullYear();date_server
+    fecha2 = fecha2.replaceAll("-", "/")
+    var hora2 = hoy.getHours() + ':' + hoy.getMinutes() + ':' + hoy.getSeconds();
+    var fecha_server = `${fecha2} ${hora2}`;
+    return fecha_server;
 }
 
 /*  CONEXION SERVIDOR MOSQUITO  */
@@ -70,7 +76,6 @@ client.on('message', (topic, payload) => {
         operation_db( response.ID , response)  //response.ID    Testt
     } catch (error) {
         console.log(error);
-        saveLog (`Exepcion producida al momento de conectarse con el servidor de mosquito, fecha:${date_server()}`);  
     }
 })
 
@@ -79,15 +84,16 @@ function operation_db(id_module,telemetry) {
          // Calcular llave foranea del xtam
         con.query(`call calculate_id ("${id_module}")`, (error, results, fields) => 
         {
-            console.log("Modulo: " + id_module);
+            
             if (error) {
-                console.error(error.message);
-                saveLog (`Error al momento de calcular operacion db ${id_module} , el error es: ${error.message}, fecha:${date_server()}`)
+                return console.error(error.message);
+                saveLog (`Error al momento de calcular operacion db ${id_module} , el error es: ${error.message}`)
             }
             let [RowDataPacket] = results[0]
             if (RowDataPacket === undefined) {
-                console.log(" No existe el id module: ");
-                saveLog (`Error , no existe el modulo: ${id_module} , el error es: ${error.message}, fecha:${date_server()}`)
+                return
+                //console.log(" No existe el id module: ");
+                //saveLog (`Error , no existe el modulo: id_module  , el error es: ${error.message}`)
             } else
             {
                 console.log("  step 1 ");
@@ -116,14 +122,16 @@ function ultimate_new (fk_xtam,telemetry )
             if (error) {
                 //return console.error(error.message);
                 //Guardar error en el log
-                saveLog (`Error al momento de calcular la ultima novedad para el xtam ${fk_xtam} , el error es: ${error.message}, fecha:${date_server()} `)
+                saveLog (`Error al momento de calcular la ultima novedad para el xtam ${fk_xtam} , el error es: ${error.message}`)
             }
             if (results.length == 0) {
                 console.log("haga el insert");
                 let {telemetria,XTAM,ID} = telemetry
+                
                 insert_xtam_news(fk_xtam,telemetria,XTAM,ID ) 
-                //insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID )
+                insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID )
             } else {
+                
                 //ya existe el primer registo del equipo xtam en la base de datos
                 let {fecha,hora,Id_xtam_news} = results[0]
 
@@ -139,7 +147,8 @@ function ultimate_new (fk_xtam,telemetry )
                     //insertar informacion
                     let {telemetria,XTAM,ID} = telemetry
                     insert_xtam_news(fk_xtam,telemetria,XTAM,ID ) 
-                    //insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID )
+                    insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID )
+                    exec_uptCameras(fk_xtam,XTAM)
                 }else{
                     console.log("El tiempo no le da para insertar un registro...: " + fk_xtam);
                 }
@@ -156,10 +165,11 @@ function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
 {   
     try 
     {            
+        console.log("XTAM  ",XTAM );
+
         var  data = []; 
         /*console.log( "  temp ", telemetria.tem, "   hum ", telemetria.hum,  "   Wop5V", telemetria.Wop5V,"  Vop12V ",telemetria.Vop12V
-        ,"   Wop12V ", telemetria.Wop12V, " bat ", telemetria.bat, "  red ", telemetria.red, " Rdb ",  telemetria.Rdb, " CUP ", XTAM.CUP
-        ,   "  GPU  ", XTAM.GPU , "  RAM  ", XTAM.RAM ,  "     ", " TempCPU ",   XTAM.TempCPU, " TempGPU ", XTAM.TempGPU, "  DiskUse ",   XTAM.DiskUse  );*/
+        ,"   Wop12V ", telemetria.Wop12V, " bat ", telemetria.bat, "  red ", telemetria.red, " Rdb ",  telemetria.Rdb);*/
 
         // validaciones vienen vacios>
         if ( telemetria.tem != UNDEFINNED) 
@@ -202,34 +212,38 @@ function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
         {
             data.push([fk_xtam, 10, telemetria.Rdb])
         } 
-        if ( telemetria.Rdb > CEROO) 
-        {
-            data.push([fk_xtam, 10, telemetria.Rdb])
-        } 
-        if ( telemetria.GPU > CEROO) 
+      
+
+        if ( XTAM.GPU > CEROO) 
         {
             data.push([fk_xtam, 25, XTAM.GPU])
         } 
-        if ( telemetria.RAM > CEROO) 
+        
+        if ( XTAM.CPU > CEROO) 
+        {
+            data.push([fk_xtam, 24, XTAM.CPU])
+        } 
+        if ( XTAM.RAM > CEROO) 
         {
             data.push([fk_xtam, 26, XTAM.RAM])
         }
-        if ( telemetria.TempCPU > CEROO) 
+        if ( XTAM.TempCPU > CEROO) 
         {
             data.push([fk_xtam, 27, XTAM.TempCPU])
         }
-        if ( telemetria.TempGPU > CEROO) 
+        if ( XTAM.TempGPU > CEROO) 
         {
             data.push([fk_xtam, 28, XTAM.TempGPU])
         }
-        if ( telemetria.DiskUse > CEROO) 
+        
+        if ( XTAM.DiskUse > CEROO) 
         {
             data.push([fk_xtam, 30, XTAM.DiskUse])
         }
 
         //Insertar en la base de datos>
         var query = `INSERT INTO xtamtelemetria.xtam_news (Fk_xtam, Fk_categoria, valor) VALUES ?`;
-    
+        
         con.query(query, [data], function(err, response){
             if (err) {
                 saveLog (`Error al momento de insertar la novedad en xtam news, el error es: ${err.message}, fecha:${date_server()}`)
@@ -247,65 +261,446 @@ function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
 //insertar novedad en xtam services news
 function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID)
 {
-    try 
-    {
-        //insertar valores cualitativos
-        //TIP: null  ///que es tip en el json telemetria, preguntar a sebastian
-        var query = `INSERT INTO xtamtelemetria.xtam_services_news (Fk_xtam, Fk_categoria, valor) VALUES ?`;
-       // data array
-        var data = [
-           [fk_xtam,  2, XTAM.Services.FTP],
-           [fk_xtam,  3, XTAM.Services.APACHE],
-           [fk_xtam, 31, XTAM.Services.PingC4],
-           [fk_xtam, 32, XTAM.Services.PingRobustel],
-           [fk_xtam, 32, XTAM.FlujosIN.INSTC1],
-           [fk_xtam, 33, XTAM.FlujosIN.INSTC2],
-           [fk_xtam, 34, XTAM.FlujosIN.INSTC3],
-           [fk_xtam, 35, XTAM.FlujosIN.INSTC4],
-        ];
-       
+   if ( (XTAM.FlujosOut.OUTSTC1===NULLL || XTAM.FlujosOut.OUTSTC1=== UNDEFINNED) && 
+        (XTAM.FlujosOut.OUTSTC2===NULLL || XTAM.FlujosOut.OUTSTC2=== UNDEFINNED) &&
+        (XTAM.FlujosOut.OUTSTC3===NULLL || XTAM.FlujosOut.OUTSTC3=== UNDEFINNED) &&
+        (XTAM.FlujosOut.OUTSTC4===NULLL || XTAM.FlujosOut.OUTSTC4=== UNDEFINNED) &&
+
+        (XTAM.FlujosIn.INSTC1===NULLL || XTAM.FlujosIn.INSTC1=== UNDEFINNED) &&
+        (XTAM.FlujosIn.INSTC2===NULLL || XTAM.FlujosIn.INSTC2=== UNDEFINNED) &&
+        (XTAM.FlujosIn.INSTC3===NULLL || XTAM.FlujosIn.INSTC3=== UNDEFINNED) &&
+        (XTAM.FlujosIn.INSTC4===NULLL || XTAM.FlujosIn.INSTC4=== UNDEFINNED) &&
+
+        (XTAM.Services.FTP===NULLL || XTAM.Services.FTP===UNDEFINNED ) &&
+        (XTAM.Services.APACHE===NULLL || XTAM.Services.APACHE===UNDEFINNED ) &&
+        (XTAM.Services.PingC4===NULLL || XTAM.Services.PingC4===UNDEFINNED ) &&
+        (XTAM.Services.PingRobustel===NULLL || XTAM.Services.PingRobustel===UNDEFINNED )
+    ){
+        //insertar en la tabla alarmas, este evento sucede cuando no reporta xtam los servicios que tiene a disposicion
+        
+        con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},47,null)`, function(err, response)
+        {
+                if (err) {
+                    saveLog (`Error al momento de insertar la novedad en xtam_alarmss, el error es: ${err.message}`)
+                }
+                else {
+                    console.log('Xtam con valores nulos, Registros insertados: ' + response.affectedRows);
+                }
+        });
+   }else
+   {
+        //validar por servicios xtam
+        if  (XTAM.FlujosOut.OUTSTC1===NULLL || XTAM.FlujosOut.OUTSTC1=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},37,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss  , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de salida 1  null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosOut.OUTSTC2===NULLL || XTAM.FlujosOut.OUTSTC2=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},38,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de salida 2 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosOut.OUTSTC3===NULLL || XTAM.FlujosOut.OUTSTC3=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},39,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de salida 3 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosOut.OUTSTC4===NULLL || XTAM.FlujosOut.OUTSTC4=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},40,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de salida 4 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosIn.INSTC1===NULLL || XTAM.FlujosIn.INSTC1=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},33,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de entrada 4 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosIn.INSTC2===NULLL || XTAM.FlujosIn.INSTC2=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},34,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de entrada 2 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosIn.INSTC3===NULLL || XTAM.FlujosIn.INSTC3=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},35,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de entrada 3 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.FlujosIn.INSTC4===NULLL || XTAM.FlujosIn.INSTC4=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},36,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con flujo de entrada 4 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Recordings.RDC1===NULLL || XTAM.Recordings.RDC1=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},41,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con grabacion 1 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Recordings.RDC2===NULLL || XTAM.Recordings.RDC2=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},42,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con grabacion 2 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Recordings.RDC3===NULLL || XTAM.Recordings.RDC3=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},43,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con grabacion 3 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Recordings.RDC4===NULLL || XTAM.Recordings.RDC4=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},44,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con grabacion 4 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Recordings.RDC4===NULLL || XTAM.Recordings.RDC4=== UNDEFINNED) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},44,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con grabacion 4 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Services.FTP===NULLL || XTAM.Services.FTP===UNDEFINNED ) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},2,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con FTP null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Services.APACHE===NULLL || XTAM.Services.APACHE===UNDEFINNED ) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},3,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con APACHE null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Services.PingC4===NULLL || XTAM.Services.PingC4===UNDEFINNED ){
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},31,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con PingC4 null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        if  (XTAM.Services.PingRobustel===NULLL || XTAM.Services.PingRobustel===UNDEFINNED ) {
+            //alarma salida 1 null
+            con.query(`INSERT INTO xtamtelemetria.xtam_alarmss (Fk_xtam, Fk_categoria, valor) VALUES (${fk_xtam},32,null)`  , function(err, response)
+            {
+                    if (err) {
+                        saveLog (`Error al momento de insertar la novedad en xtam_alarmss , el error es: ${err.message}`)
+                    }
+                    else {
+                        console.log('Xtam con PingRobustel null, Registros insertados: ' + response.affectedRows);
+                    }
+            });
+        }
+        let data = [];
+        console.log("Xtams>> ", XTAM); 
+        console.log("*********************************************");
+        if (XTAM.Services.FTP != NULLL )  {
+            
+            data.push( [fk_xtam, 2, XTAM.Services.FTP] )
+        }
+        if (XTAM.Services.APACHE != NULLL )  {
+            
+            data.push( [fk_xtam, 3, XTAM.Services.APACHE] )
+        }
+        if (XTAM.Services.PingC4 != NULLL )  {
+            
+            data.push( [fk_xtam, 31, XTAM.Services.PingC4] )
+        }
+        if (XTAM.Services.PingRobustel != NULLL )  {
+            
+            data.push( [fk_xtam, 32, XTAM.Services.PingRobustel] )
+        }
+        if (XTAM.FlujosIn.INSTC1 != NULLL )  {
+        
+            data.push( [fk_xtam, 33, XTAM.FlujosIn.INSTC1] )
+        }
+        if (XTAM.FlujosIn.INSTC2 != NULLL )  {
+        
+            data.push( [fk_xtam, 34, XTAM.FlujosIn.INSTC2] )
+        }
+        if (XTAM.FlujosIn.INSTC3 != NULLL )  {
+        
+            data.push( [fk_xtam, 35, XTAM.FlujosIn.INSTC3] )
+        }
+        if (XTAM.FlujosIn.INSTC4 != NULLL )  {
+        
+            data.push( [fk_xtam, 36, XTAM.FlujosIn.INSTC4] )
+        }
+
+
+        if (XTAM.FlujosOut.OUTSTC1 != NULLL )  {
+        
+            data.push( [fk_xtam, 37, XTAM.FlujosOut.OUTSTC1] )
+        }
+        if (XTAM.FlujosOut.OUTSTC2 != NULLL )  {
+            
+            data.push( [fk_xtam, 38, XTAM.FlujosOut.OUTSTC2] )
+        }
+        if (XTAM.FlujosOut.OUTSTC3 != NULLL )  {
+            
+            data.push( [fk_xtam, 39, XTAM.FlujosOut.OUTSTC3] )
+        }
+        if (XTAM.FlujosOut.OUTSTC4 != NULLL )  {
+            
+            data.push( [fk_xtam, 40, XTAM.FlujosOut.OUTSTC4] )
+        }
+
+        if (XTAM.Recordings.RDC1 != NULLL )  {
+            
+            data.push( [fk_xtam, 41, XTAM.Recordings.RDC1 ] )
+        }
+        if (XTAM.Recordings.RDC2 != NULLL )  {
+            
+            data.push( [fk_xtam, 42, XTAM.Recordings.RDC2 ] )
+        }
+        if (XTAM.Recordings.RDC3 != NULLL )  {
+            
+            data.push( [fk_xtam, 43, XTAM.Recordings.RDC3 ] )
+        }
+        if (XTAM.Recordings.RDC4 != NULLL )  {
+            
+            data.push( [fk_xtam, 44, XTAM.Recordings.RDC4 ] )
+        }
+
+        console.log("EWste es mi data ", data);
+        //insertar 
+        let query = `INSERT INTO xtamtelemetria.xtam_services_news (Fk_xtam, Fk_categoria, valor) VALUES ?`;
         con.query(query, [data], function(err, response)
         {
             if (err) {
-                    saveLog (`Error al momento de insertar la novedad en  xtam_services_news ${data} , el error es: ${err.message}, fecha: ${date_server()}`);
-            }else {
+                saveLog (`Error al momento de insertar la novedad en xtam services news ${data} , el error es: ${err.message}`)
+            }
+            else {
                 console.log('Registros insertados: ' + response.affectedRows);
             }
         });
-    } catch (error) {
-        saveLog (`Exepcion producida en la funcion : insert_xtam_services_news, fecha:${date_server()}`);
-    }
+   }
 }
 
 // guaradar en el log
 function saveLog ( txtt )
 {
-    try {
-        // Get the file contents before the append operation
-        fs.readFileSync("logListen.txt", "utf8");
-        fs.appendFile("logListen.txt",  `\n ${txtt}` , (err) => {
-            if (err) {
-                console.log(err);
-            }
-            else {
-                // Get the file contents after the append operation
-                console.log("\nFile Contents of file after append:",
-                fs.readFileSync("logListen.txt", "utf8"));
-            }
-        });
-    } catch (error) {
-        saveLog (`Exepcion producida en la funcion : saveLog, error:${error.message}, fecha:${date_server()}`);
-    }
+    // Get the file contents before the append operation
+    fs.readFileSync("logListen.txt", "utf8");
+    fs.appendFile("logListen.txt",  `\n ${txtt}` , (err) => {
+        if (err) {
+          console.log(err);
+        }
+        else {
+          // Get the file contents after the append operation
+          console.log("\nFile Contents of file after append:",
+            fs.readFileSync("logListen.txt", "utf8"));
+        }
+      });
 }
 
 function howMinutes () {
-    try {
-        //tenga en cuenta la ruta del archivo del cual se extraen los minutos
-        let archivo = fs.readFileSync('C:/Users/Administrator/Documents/minutes.txt', 'utf-8');
-        let whatMinutes = JSON.parse(archivo);
-        let minutuess = parseInt(whatMinutes.Minutes) ;
-        return  minutuess;
-    } catch (error) {
-        saveLog (`Exepcion producida en la funcion : howMinutes, error:${error.message}, fecha:${date_server()}`);
-    }
+    //tenga en cuenta la ruta del archivo del cual se extraen los minutos
+    let archivo = fs.readFileSync('C:/Users/Administrator/Documents/minutes.txt', 'utf-8');
+    let whatMinutes = JSON.parse(archivo);
+    let minutuess = parseInt(whatMinutes.Minutes) ;
+    return  minutuess;
 }
+
+
+
+//Actualizar base de datos C4
+function exec_uptCameras (idCam, XTAM)
+{
+    con_xtamDB.query(`SELECT * FROM centro_comercial   WHERE id = ${idCam} limit 1`,
+    (error, results, fields) =>
+    {
+        if (error) {
+            return console.error(error.message);
+            saveLog (`Ejecutar la actualizacion de camaras en la base de datos del c4 : ${idCam}, el error es: ${error.message}`)
+        }
+        if (results.length == 0) {
+            console.log(`No hay datos del idcam:   ${idCam} `);
+        }else
+        {
+            //console.log( " " +results[0].descripcion);
+            let setFields = "";
+            if (results[0].flujo_entrada1 != XTAM.FlujosIn.INSTC1){
+                setFields+= `flujo_entrada1='${XTAM.FlujosIn.INSTC1}',`;
+            }
+            if (results[0].flujo_entrada2 != XTAM.FlujosIn.INSTC2){
+                setFields+= `flujo_entrada2='${XTAM.FlujosIn.INSTC2}',`;
+            }
+            if (results[0].flujo_entrada3 != XTAM.FlujosIn.INSTC3){
+                setFields+= `flujo_entrada3='${XTAM.FlujosIn.INSTC3}',`;
+            }
+            if (results[0].flujo_entrada4 != XTAM.FlujosIn.INSTC4){
+                setFields+= `flujo_entrada4='${XTAM.FlujosIn.INSTC4}',`;
+            }
+
+            if (results[0].flujo_salida1 != XTAM.FlujosOut.OUTSTC1){
+                setFields+= `flujo_salida1='${XTAM.FlujosOut.OUTSTC1}',`;
+            }
+            if (results[0].flujo_salida2 != XTAM.FlujosOut.OUTSTC2){
+                setFields+= `flujo_salida2='${XTAM.FlujosOut.OUTSTC2}',`;
+            }
+            if (results[0].flujo_salida3 != XTAM.FlujosOut.OUTSTC3){
+                setFields+= `flujo_salida3='${XTAM.FlujosOut.OUTSTC3}',`;
+            }
+            if (results[0].flujo_salida4 != XTAM.FlujosOut.OUTSTC4){
+                setFields+= `flujo_salida4='${XTAM.FlujosOut.OUTSTC4}',`;
+            }
+
+            if (results[0].recording1 != XTAM.Recordings.RDC1){
+                setFields+= `recording1='${XTAM.Recordings.RDC1}',`;
+            }
+            if (results[0].recording2 != XTAM.Recordings.RDC2){
+                setFields+= `recording2='${XTAM.Recordings.RDC2}',`;
+            }
+            if (results[0].recording3 != XTAM.Recordings.RDC3){
+                setFields+= `recording3='${XTAM.Recordings.RDC3}',`;
+            }
+            if (results[0].recording4 != XTAM.Recordings.RDC4){
+                setFields+= `recording4='${XTAM.Recordings.RDC4}',`;
+            }
+
+            if (results[0].ping_c4 != XTAM.Services.PingC4 ){
+                setFields+= `ping_c4='${XTAM.Services.PingC4}',`;
+            }
+            if (results[0].ping_robustel != XTAM.Services.PingRobustel ){
+                setFields+= `ping_robustel='${XTAM.Services.PingRobustel}',`;
+            }
+            if (results[0].apache != XTAM.Services.APACHE ){
+                setFields+= `apache='${XTAM.Services.APACHE}',`;
+            }
+            if (results[0].ftp != XTAM.Services.FTP ){
+                setFields+= `ftp='${XTAM.Services.FTP}',`;
+            }
+
+            
+            if (setFields.charAt(setFields.length - 1)===",") {
+                console.log("El ultimo caracter es una coma ");
+                setFields = setFields.substring(0, setFields.length - 1);
+            }
+            if (setFields.charAt(0)===",") {
+                console.log("El Primero caracter es una coma ");
+                setFields = setFields.substring(1, setFields.length );
+            }
+               
+
+            if ( setFields !="" ) {
+                con_xtamDB.query(`UPDATE centro_comercial
+                SET ${setFields}
+                WHERE id = ${idCam} `,
+                    (error, results, fields) =>{
+                        if (error) {
+                            return console.error("Error al momento de actualizar camaras news: " +error.message);
+                        }else{
+                            console.log("Actualizacion completada.");
+                        }
+                    });
+            }
+        }
+    });
+}
+
+
+

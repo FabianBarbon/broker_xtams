@@ -1,7 +1,8 @@
+//los siguientes valores numericos se encuentran en la tabla categorias en la base de datos de telemetria
 //Telemetria 
-    temp        --> 4                            //temperatura xtam
+    temp        --> 4                             //temperatura xtam
     hum         --> 5
-    ACC1	    --> 19                           //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
+    ACC1	    --> 19                            //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
     ACC2	    --> 20                            //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
     ACC3        --> 21                            //  OFF /ON   tipo fisico, activar sirena , sesor apagar, se define el valor despues, actuador 1apaga el pc
     Vop5V	    --> 12
@@ -13,6 +14,7 @@
     Rdb         --> 10                              //VALOR DE LA SENAL
     IPRed	    --> 22
     HoraRed	    --> 23
+    //que es TIP
 
 //Xtam
     CPU	        --> 24                              //porcentaje de uso
@@ -23,17 +25,22 @@
     DiskUse1	--> 29
     DiskUse2	--> 30
     FlujosIN
-        INSTC1                                      //Estado del servicio (RUN, STOP, OFF)
-        INSTC2
-        INSTC3
-        INSTC4
+        INSTC1  --> 33                                     //Estado del servicio (RUN, STOP, OFF)
+        INSTC2  --> 34
+        INSTC3  --> 35
+        INSTC4  --> 36
+    FlujosOut
+        OUTSTC1 -->37                                      //Estado del servicio (RUN, STOP, OFF)
+        OUTSTC2 -->38
+        OUTSTC3 -->39
+        OUTSTC4 -->40
     Recording
-        RDC1
-        RDC2
-        RDC3
-        RDC4
+        RDC1    -->41                                       //Estado del servicio (RUN, STOP, OFF)
+        RDC2    -->42
+        RDC3    -->43
+        RDC4    -->44
     Services
-        FTP
-        APACHE
-        PingXC
-        PingRobustel
+        FTP             -->2
+        APACHE          -->3
+        PingXC          -->31
+        PingRobustel    -->32

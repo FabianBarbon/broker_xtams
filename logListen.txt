@@ -1,1 +1,31 @@
 ///////////////////// LOG XTAM LISTENS /////////////////////
+
+ Error al momento de calcular operacion db XTAM0269 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha:3/5/2023 9:10:47
+ Error al momento de calcular operacion db XTAM0137 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha:3/5/2023 9:29:7
+ Error al momento de calcular operacion db XTAM0137 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha:3/5/2023 9:30:13
+ Error al momento de calcular operacion db XTAM0148 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha:3/5/2023 9:35:9
+ Error al momento de calcular operacion db XTAM0154 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha:3/5/2023 10:38:28
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 15:39:40
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 15:39:44
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 15:39:59
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 15:40:7
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 15:40:36
+ Exepcion producida en la funcion : insert_xtam_services_news, error: Cannot read properties of undefined (reading 'INSTC1'), fecha:3/5/2023 15:41:53
+ Exepcion producida en la funcion : insert_xtam_services_news, error: Cannot read properties of undefined (reading 'INSTC1'), fecha:3/5/2023 15:48:34
+ Error al momento de insertar la novedad en xtam news, el error es: ER_WARN_DATA_OUT_OF_RANGE: Out of range value for column 'valor' at row 4, fecha:3/5/2023 15:48:34
+ Exepcion producida en la funcion : insert_xtam_services_news, error: Cannot read properties of undefined (reading 'INSTC1'), fecha:3/5/2023 16:4:21
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 16:5:25
+ Exepcion producida en la funcion : insert_xtam_services_news, fecha:3/5/2023 16:5:29
+ Exepcion producida en la funcion : insert_xtam_services_news, error: Cannot read properties of undefined (reading 'INSTC1') fecha:3/5/2023 16:8:31
+ Error al momento de calcular operacion db XTAM0137 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha:3/5/2023 16:9:26
+ Exepcion producida en la funcion : insert_xtam_services_news, error: query is not defined fecha:3/5/2023 16:9:41
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
