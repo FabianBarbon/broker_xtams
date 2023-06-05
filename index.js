@@ -38,6 +38,15 @@ function date_server() {
     return fecha_server;
 }
 
+/*  PROCESO PARA CALCULAR Y FORMATEAR LA FECHA DEL SERVIDOR  */
+function date_server_stamp() {
+    var today = new Date();
+    var date = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var date_time = date + ' ' + time;
+    return date_time;
+}
+
 /*  CONEXION SERVIDOR MOSQUITO  */
 const mqtt = require('mqtt');
 const { log, Console } = require('console');
@@ -51,8 +60,8 @@ const client = mqtt.connect(connectUrl, {
     clientId,
     clean: true,
     connectTimeout: 4000,
-    username: 'test',
-    password: 'test',
+    username: 'prueba', //test
+    password: 'prueba',//test
     reconnectPeriod: 1000,
 })
 
@@ -129,6 +138,7 @@ function ultimate_new (fk_xtam,telemetry )
                 let {telemetria,XTAM,ID} = telemetry
                 
                 insert_xtam_news(fk_xtam,telemetria,XTAM,ID ) 
+                
                 insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID )
             } else {
                 
@@ -147,6 +157,7 @@ function ultimate_new (fk_xtam,telemetry )
                     //insertar informacion
                     let {telemetria,XTAM,ID} = telemetry
                     insert_xtam_news(fk_xtam,telemetria,XTAM,ID ) 
+                    console.log("Entrassss  ",XTAM.FlujosOut.OUTSTC1);
                     insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID )
                     exec_uptCameras(fk_xtam,XTAM)
                 }else{
@@ -164,7 +175,9 @@ function ultimate_new (fk_xtam,telemetry )
 function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
 {   
     try 
-    {            
+    {   
+        console.log("telemetria  ",telemetria );    
+        console.log("******************************");     
         console.log("XTAM  ",XTAM );
 
         var  data = []; 
@@ -172,7 +185,7 @@ function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
         ,"   Wop12V ", telemetria.Wop12V, " bat ", telemetria.bat, "  red ", telemetria.red, " Rdb ",  telemetria.Rdb);*/
 
         // validaciones vienen vacios>
-        if ( telemetria.tem != UNDEFINNED) 
+        if ( telemetria.temp != UNDEFINNED) 
         {
             //console.log(  "Temperatura indefinida  " ) 
             data.push([fk_xtam, 4, telemetria.temp])
@@ -187,10 +200,15 @@ function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
             //console.log(  "Temperatura indefinida  " ) 
             data.push([fk_xtam, 5, telemetria.hum])
         } 
-        if ( telemetria.Wop5V > CEROO) 
+        if ( telemetria.Vop5V > CEROO) 
         {
             //console.log(  "Temperatura indefinida  " ) 
             data.push([fk_xtam, 12, telemetria.Vop5V])
+        } 
+        if ( telemetria.Wop5V > CEROO) 
+        {
+            //console.log(  "Temperatura indefinida  " ) 
+            data.push([fk_xtam, 6, telemetria.Wop5V])
         } 
         if ( telemetria.Vop12V > CEROO) 
         {
@@ -261,6 +279,7 @@ function insert_xtam_news(fk_xtam,telemetria,XTAM,ID)
 //insertar novedad en xtam services news
 function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID)
 {
+    
    if ( (XTAM.FlujosOut.OUTSTC1===NULLL || XTAM.FlujosOut.OUTSTC1=== UNDEFINNED) && 
         (XTAM.FlujosOut.OUTSTC2===NULLL || XTAM.FlujosOut.OUTSTC2=== UNDEFINNED) &&
         (XTAM.FlujosOut.OUTSTC3===NULLL || XTAM.FlujosOut.OUTSTC3=== UNDEFINNED) &&
@@ -497,6 +516,7 @@ function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID)
         let data = [];
         console.log("Xtams>> ", XTAM); 
         console.log("*********************************************");
+        
         if (XTAM.Services.FTP != NULLL )  {
             
             data.push( [fk_xtam, 2, XTAM.Services.FTP] )
@@ -565,7 +585,8 @@ function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID)
             data.push( [fk_xtam, 44, XTAM.Recordings.RDC4 ] )
         }
 
-        console.log("EWste es mi data ", data);
+        console.log("EWste es mi data ", data); 
+        console.log("Quien es el xtam >>", fk_xtam);
         //insertar 
         let query = `INSERT INTO xtamtelemetria.xtam_services_news (Fk_xtam, Fk_categoria, valor) VALUES ?`;
         con.query(query, [data], function(err, response)
@@ -608,17 +629,40 @@ function howMinutes () {
 
 
 //Actualizar base de datos C4
-function exec_uptCameras (idCam, XTAM)
+function exec_uptCameras (id_cc, XTAM)
 {
-    con_xtamDB.query(`SELECT * FROM centro_comercial   WHERE id = ${idCam} limit 1`,
+    con_xtamDB.query(`SELECT * FROM telemetria_status   WHERE id_centrocomercial = ${id_cc} limit 1`,
     (error, results, fields) =>
     {
         if (error) {
             return console.error(error.message);
-            saveLog (`Ejecutar la actualizacion de camaras en la base de datos del c4 : ${idCam}, el error es: ${error.message}`)
+            saveLog (`Ejecutar la actualizacion de camaras en la base de datos del c4 : ${id_cc}, el error es: ${error.message}`)
+            //insertar aqui
         }
         if (results.length == 0) {
-            console.log(`No hay datos del idcam:   ${idCam} `);
+            console.log(`No hay datos del id_cc:   ${id_cc} `);
+            console.log("**********************************************");
+            //  Insertar en la tabla telemetria_status si no se tiene registro
+            /*console.log(`INSERT INTO telemetria_status (id_centrocomercial, flujo_entrada1, flujo_entrada2, flujo_entrada3,
+                 flujo_entrada4, flujo_salida1, flujo_salida2, flujo_salida3, flujo_salida4, recording1, recording3, recording4,
+                  recording2, ping_c4, ping_robustel, apache, FTP, ultima_actualizacion)
+            VALUES (${id_cc}, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,"${date_server_stamp()}");`);
+            */
+            
+            
+            con_xtamDB.query( `INSERT INTO telemetria_status (id_centrocomercial, flujo_entrada1, flujo_entrada2, flujo_entrada3,
+                flujo_entrada4, flujo_salida1, flujo_salida2, flujo_salida3, flujo_salida4, recording1, recording3, recording4,
+                recording2, ping_c4, ping_robustel, apache, FTP, ultima_actualizacion)
+                VALUES (${id_cc}, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,"${date_server_stamp()}");`, function(err, response)
+            {
+                if (err) {
+                    saveLog (`Error al momento de insertar en la tabla telemetria_status, el primer registro del centro comercial $${id_cc}  , el error es: ${err.message}`)
+                }
+                else {
+                    console.log('Insertado con exito en la tabla telemetria_status: ' + response.affectedRows);
+                }
+            });
+            
         }else
         {
             //console.log( " " +results[0].descripcion);
@@ -687,9 +731,9 @@ function exec_uptCameras (idCam, XTAM)
                
 
             if ( setFields !="" ) {
-                con_xtamDB.query(`UPDATE centro_comercial
+                con_xtamDB.query(`UPDATE telemetria_status
                 SET ${setFields}
-                WHERE id = ${idCam} `,
+                WHERE id_centrocomercial = ${id_cc} `,
                     (error, results, fields) =>{
                         if (error) {
                             return console.error("Error al momento de actualizar camaras news: " +error.message);

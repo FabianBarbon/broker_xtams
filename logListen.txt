@@ -29,3 +29,4 @@
  Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
  Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
  Error al momento de insertar la novedad en xtam news  , el error es: ER_PARSE_ERROR: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+ Error al momento de insertar en la tabla telemetria_status, el primer registro del centro comercial $23  , el error es: ER_NO_SUCH_TABLE: Table 'xtamtelemetria.telemetria_status' doesn't exist
