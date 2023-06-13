@@ -1,0 +1,94 @@
+con.query(`SELECT id_alarm, FK_xtam,sitio, DATE_FORMAT(date (fecha_alarma), '%d/%m/%Y') as fecha ,
+    time(fecha_alarma) as hora,FK_estado   FROM xtam_alarms 
+    WHERE FK_xtam = ${id_cc}  order by fecha_alarma desc limit 1 `,
+    (error, results, fields) =>
+    {
+        if (error) {
+            return console.error(error.message);
+            saveLog (`Ejecutar la actualizacion de camaras en la base de datos del c4 : ${id_cc}, el error es: ${error.message}`)
+            //insertar aqui
+        }
+        if (results.length == 0) {
+            console.log("Puede insertar");
+            //insertar 
+            /*
+            con_alarmDB.query(`INSERT INTO flujos_entradas1(FK_xtam,sitio,tipo,vista_usuario,FK_estado,puntuacion,fecha_alerta)VALUES
+            (${id_cc},"${descripcion}","Flujo#1 caido",0,1,0,"${date_server_stamp()}");`, function(err, response)
+            {
+                if (err) {
+                    saveLog (`Error al momento de insertar en la tabla flujos_entradas1, el primer registro del centro comercial $${id_cc}  , el error es: ${err.message}`)
+                }
+                else {
+                    console.log('Insertado con exito en la tabla flujos_entradas1: ' + response.affectedRows);
+                }
+            });*/
+        }else {
+             //ya existe el primer registo del equipo xtam en la base de datos
+             /*
+             let {FK_xtam,sitio,fecha,hora,fecha_respuesta } = results[0]
+
+             fecha_format = moment(`${fecha} ${hora}`, 'DD/MM/YYYY HH:mm:ss');
+             fecha_server = moment(date_server(), 'DD/MM/YYYY HH:mm:ss');
+             dayss = fecha_server.diff(fecha_format, 'days', true); //difrenecia en minutos
+            if ( dayss >= 1  &&  fecha_respuesta != NULLL) {
+                console.log("me ves");
+                //insertar otro
+            }*/
+            
+        }
+    });
+
+
+
+
+    else {
+            // actualizar
+            /*console.log("Respuesta  ", results[0].id_alarm, results[0].sitio,results[0].tipo,results[0].FK_xtam,results[0].valor,
+            results[0].fecha );*/
+            const [dias, horas] = getHoursDates(results[0].fecha);
+            if (  
+                dias >=1  && 
+                (results[0].tipo == "Flujo Entrada#1" || results[0].tipo == "Flujo Entrada#2" || results[0].tipo == "Flujo Entrada#3" || results[0].tipo == "Flujo Entrada#4" ) 
+                && results[0].valor== STOP ) 
+            {
+                //console.log(` dias> ${dias}  tipo>  ${results[0].tipo}  valor>  ${results[0].valor}  `);
+                updateAlarms(results[0].id_alarm,`"Fallo recurrente ${results[0].tipo}, por favor atender el mismo."`)
+            }
+            ///////////////////////////
+            if ( horas  >=1  && (results[0].tipo == "Humedad" || results[0].tipo == "Temperatura Xtam"
+            || results[0].tipo == "Potencia de operación 5v" || results[0].tipo == "% carga bateria" 
+            || results[0].tipo == "potencia de la señal" ) ) {
+                updateAlarms(results[0].id_alarm,`"Fallo recurrente ${results[0].tipo}, por favor atender el mismo."`)   
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function selectAlarms(fk_xtam,sitio,tipo, valor)  {   
+    con.query(`SELECT id_alarm, FK_xtam,sitio, tipo,valor,DATE_FORMAT(date (fecha_alarma), '%d/%m/%Y') as fecha ,
+    time(fecha_alarma) as hora,FK_estado , fecha_respuesta  FROM xtam_alarms 
+    WHERE FK_xtam = ${fk_xtam}  and tipo = "${tipo}" and FK_estado =1 and fecha_respuesta is NULL
+    order by fecha_alarma desc`,
+    (error, results, fields) =>
+    {
+        if (error) {
+            return console.error(error.message);
+            saveLog (`Ejecutar la actualizacion de camaras en la base de datos del c4 : ${id_cc}, el error es: ${error.message}`)
+        }
+        if (results.length == 0) {
+            console.log("Puede insertar");
+            //insertar 
+            insertAlarms (fk_xtam,sitio,tipo, valor ) 
+        }
+    });
+}
