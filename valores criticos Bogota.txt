@@ -1,0 +1,15 @@
+tempreatura 	-> 10 - 45
+hum		-> 0  - 45
+Vop5V		-> 4.7 - 5.5
+Vop12V		-> 11.8 - 12.7
+bat		-> 20	- 100
+TipoRed		-> 1 - 8
+dbRed		-> Mayor 110 - Menor 90
+CPU		-> 40 - 70
+GPU		-> 40 - 70
+RAM		-> 0 - 90
+TempCPU		-> 20 -70
+TempGPU		-> 20 -70
+DiskUse		-> 2 -64
+DiskUse2	-> 2 - 800
+LastBoot	-> fecha del ultimo inicio
