@@ -1,0 +1,6 @@
+var con = mysql.createConnection({
+    host: "10.147.20.113",
+    user: "xtam",
+    password: 'Xtam2021*',
+    database: 'xtamtelemetria'
+});
