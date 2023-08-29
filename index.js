@@ -11,14 +11,14 @@ const util = require('util');
 let moment = require('moment');
 const fs = require('fs');
 let parseInt = require('parse-int');
-const miutes_insert = process.env.INSERT_DEVOP             //howMinutes();
+const miutes_insert =  process.env.INSERT_PRODUCCION  //que pasa en el caso de que no reporte           //howMinutes();
 
 // create a connection variable with the required details (Telemetria),conexion telemetria
 var con = mysql.createConnection({
-    host: process.env.HOST_TELEMETRIA,       
-    user: process.env.USER_TELEMETRIA,               
-    password: process.env.PASS_TELEMETRIA,      
-    database:  process.env.DB_TELEMETRIA  
+    host: process.env.HOST_TELEMETRIA_PROD,       
+    user: process.env.USER_TELEMETRIA_PROD,               
+    password: process.env.PASS_TELEMETRIA_PROD,      
+    database:  process.env.DB_TELEMETRIA_PROD  
 });
 
 // Evento para manejar la conexión exitosa
@@ -110,9 +110,9 @@ function insert_flinoutRecords(tablee,insertCameraNews) {
 function update_cameras ( flOutnValues,objCameras ) {
     for (let index = 0; index < objCameras.length; index++) {
         if ( flOutnValues[index] == "RUN" ){
-            flOutnValues[index] = "active"
+            flOutnValues[index] = "on"
         }else if (flOutnValues[index] == "STOP") {
-            flOutnValues[index] = "inactive"
+            flOutnValues[index] = "off"
         }
         //consulto bd del c4 
         con_c4.query(`SELECT cameraid,direccion,id_centrocomercial,estado FROM cameras WHERE cameraid = ${objCameras[index].cameraid} `,
@@ -150,18 +150,20 @@ function update_cameras ( flOutnValues,objCameras ) {
 
 // funcion actualixar c.c en el c4
 function update_cc (cc,state) {
-    console.log("Aplica para actualizacion c.c del c4");
-    con_c4.query(`UPDATE centro_comercial
-    SET estado = "${state}"
-    WHERE id = ${cc}`,
-    (error, results, fields) =>{
-        if (error) {
-            return console.error("Error al momento de actualizar c.c  del c4: " +error.message);
-        }else{
-            console.log("Actualizacion completada de c.c  en el c4.");
-        }
-    });
-
+    try {
+        con_c4.query(`UPDATE centro_comercial
+        SET estado = "${state}", update_at="${date_server_stamp()}"
+        WHERE id = ${cc}`,
+        (error, results, fields) =>{
+            if (error) {
+                return console.error("Error al momento de actualizar c.c  del c4: " +error.message);
+            }else{
+                console.log("Actualizacion completada de c.c  en el c4.");
+            }
+        });
+    } catch (error) {
+        saveLog (`error al actualizar c.c en el c4, el error es: ${error.message}, fecha: ${date_server()} `)
+    }
 }
 
 //insertar en camara news de telemetria
@@ -177,43 +179,56 @@ function insert_cameras_news(objCameras, trackXtam,numeroCamaras) //
     let insCamsPro = []
     let countterr =1;
     
-    if (todosSonNulos == false) {
+    if (todosSonNulos == false) 
+    {
        let flInValues = Object.values(FlujosIn)
        let flOutnValues = Object.values(FlujosOut)
        let recValues = Object.values(Recordings)
-       for (let index = 0; index < objCameras.length; index++) {
-            console.log("objcanmmeras:: " ,objCameras[index].cameraid);
-            // flujo entrada
-            let cam_obj = new Object();
-            cam_obj.Fk_categoria = 33+index ;
-            cam_obj.cameraid = objCameras[index].cameraid;
-            cam_obj.valuue   = flInValues[index];
-            cam_obj.datee_serv   = date_server_stamp();
-            // objeto recordings
-            let rec_obj = new Object();
-            rec_obj.Fk_categoria = 41+index;
-            rec_obj.cameraid = objCameras[index].cameraid;
-            rec_obj.valuue = recValues[index];
-            rec_obj.datee_serv   = date_server_stamp();
-            // glujosalida
-            let camPro_obj = new Object();
-            camPro_obj.Fk_categoria = 37+index;
-            camPro_obj.cameraid = objCameras[index].cameraid;
-            camPro_obj.valuue = flOutnValues[index];
-            camPro_obj.datee_serv   = date_server_stamp();
-            //////////////////////////////////////////////////////////
-                insrCameraNews.push(Object.values(cam_obj));
-                insRecorsNews.push(Object.values(rec_obj));
-                insCamsPro.push(Object.values(camPro_obj))
-       }
-       //console.log("inssss :: ",insrCameraNews ," Cuantos", insrCameraNews.length);
-       insert_flinoutRecords("cameras_news",insrCameraNews )
-       insert_flinoutRecords("cameras_news",insRecorsNews)
-       insert_flinoutRecords("cameras_news",insCamsPro)
-       update_cameras ( flOutnValues,objCameras );
+       //console.log("    si o no  ",  objetoEstaVacio(objCameras)); 
+
+ 
+            for (let index = 0; index < objCameras.length; index++) 
+            {
+                //console.log("objcanmmeras:: " ,objCameras[index].cameraid);
+                // flujo entrada
+                let cam_obj = new Object();
+                cam_obj.Fk_categoria = 33+index ;
+                cam_obj.cameraid = objCameras[index].cameraid;
+                cam_obj.valuue   = flInValues[index];
+                cam_obj.datee_serv   = date_server_stamp();
+                // objeto recordings
+                let rec_obj = new Object();
+                rec_obj.Fk_categoria = 41+index;
+                rec_obj.cameraid = objCameras[index].cameraid;
+                rec_obj.valuue = recValues[index];
+                rec_obj.datee_serv   = date_server_stamp();
+                // glujosalida
+                let camPro_obj = new Object();
+                camPro_obj.Fk_categoria = 37+index;
+                camPro_obj.cameraid = objCameras[index].cameraid;
+                camPro_obj.valuue = flOutnValues[index];
+                camPro_obj.datee_serv   = date_server_stamp();
+                //////////////////////////////////////////////////////////
+                    insrCameraNews.push(Object.values(cam_obj));
+                    insRecorsNews.push(Object.values(rec_obj));
+                    insCamsPro.push(Object.values(camPro_obj))
+         }
+            //console.log("inssss :: ",insrCameraNews ," Cuantos", insrCameraNews.length);
+            insert_flinoutRecords("cameras_news",insrCameraNews )
+            insert_flinoutRecords("cameras_news",insRecorsNews)
+            insert_flinoutRecords("cameras_news",insCamsPro)
+            update_cameras ( flOutnValues,objCameras );
+        
     }
   
 }
+
+//objeto vacio
+function objetoEstaVacio(obj) {
+    if ( obj != undefined) {
+        return Object.entries(obj).length === 0;
+    }
+  }
 
 // calculates sites
 //devolver el fk de las camaras segun el sitio
@@ -227,7 +242,11 @@ function calculatecams_site ( trackXtam ) {
         let [RowDataPacket] = results[0]
         const obj = JSON.parse(RowDataPacket.JsonCamerasId);
         //console.log("parseado " +typeof obj   + "Cuantos tiene  " + obj.length + `cameraid = ${obj.cameraid}`);
-        insert_cameras_news (obj, trackXtam,RowDataPacket.numeroCamaras ) // 11xx1xxx111 -> pruebas  á cambiar trackXtam.xtam
+        if (obj!= undefined) {
+            //objetoEstaVacio("objjjjjj que>",  obj)
+            insert_cameras_news (obj, trackXtam,RowDataPacket.numeroCamaras ) // 11xx1xxx111 -> pruebas  á cambiar trackXtam.xtam
+        }
+        
     }
     });
 }
@@ -262,7 +281,6 @@ function ultimate_newCamera(fk_xtam, telemetry) {
             
             // Validación del tiempo
             if (minutess >= miutes_insert) {
-                console.log("ADENTRO: " + fk_xtam);
                 // Insertar cada 30 minutos según su último registro en la base de datos
                 calculatecams_site(telemetry); 
             } else {
@@ -288,10 +306,37 @@ client.on('connect', () => {
 
 let dataAlarms = [] 
 
+
+//establecer inactivo en el c4 
+function setCC_C4 () {
+    try {
+        con_c4.query(`SELECT id,descripcion,estado,id_modulo,update_at,
+        DATE_FORMAT(date(update_at), '%d/%m/%Y') as fecha, time(update_at) as hora FROM  centro_comercial`,
+        (error, results, fields) =>
+        {           
+            for (let i = 0; i < results.length; i++) {
+                const result = results[i];
+                const fecha_server = moment(); // Agrego una instancia de moment para obtener la fecha actual
+                fecha_format = moment(`${results[i].fecha} ${results[i].hora}`, 'DD/MM/YYYY HH:mm:ss');
+                minutess_CC_C4 = fecha_server.diff(fecha_format, 'minutes', true); // Diferencia en minutos
+                id_mod = results[i].id_modulo;
+               
+                if ( minutess_CC_C4>=95  && (id_mod!==null && id_mod.length >=4  ) ) {
+                    update_cc (results[i].id,"off")
+                }
+            }
+        });   
+    } catch (err) {
+        saveLog (`Error al momento establecer inactivo en el c4. `)
+        return;
+    }
+}
+
 // CONEXION AL SERVIDOR DE MOSQUITO 
 client.on('message', (topic, payload) => {
     try {
-        console.log("Que veee ", JSON.parse(payload.toString()));
+        //console.log("Que veee ", JSON.parse(payload.toString()));
+        setCC_C4 ();
         let response = JSON.parse(payload.toString())
         let {telemetria,XTAM,ID } = response
         // llamo a la logica de la base de datos
@@ -547,6 +592,7 @@ function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID,descripcion)
         if  (XTAM.Recordings.RDC4===NULLL || XTAM.Recordings.RDC4=== UNDEFINNED) {
             selectAlarms(fk_xtam,descripcion,"Recording#4", null)
         }
+
         if  (XTAM.Services.FTP===NULLL || XTAM.Services.FTP===UNDEFINNED ) {
             selectAlarms(fk_xtam,descripcion,"FTP", null)
         }
@@ -561,6 +607,9 @@ function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID,descripcion)
         }
         let data = [];
         let fechaServidorr = date_server_stamp();
+        if (XTAM.Services.RTSPserver != NULLL )  {
+            data.push( [fk_xtam, 1, XTAM.Services.RTSPserver,fechaServidorr] )
+        }
         if (XTAM.Services.FTP != NULLL )  {
             data.push( [fk_xtam, 2, XTAM.Services.FTP,fechaServidorr] )
         }
