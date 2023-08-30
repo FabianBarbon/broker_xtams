@@ -660,6 +660,7 @@ function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID,descripcion)
         }
         //xtam_services_news cambiar el valor de xtam service news a varchar 40
         if (XTAM.LastBoot != NULLL )  {
+            XTAM.LastBoot = XTAM.LastBoot.slice(0,10) + " " + XTAM.LastBoot.slice(10)
             data.push( [fk_xtam, 49, XTAM.LastBoot,fechaServidorr ] )
         }
         //insertar 
