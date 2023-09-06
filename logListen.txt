@@ -1,0 +1,4 @@
+
+ Error al momento de calcular la ultima novedad en camara news 424 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 5/9/2023 19:41:19 
+ Error al momento de calcular la ultima novedad en camara news 597 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 5/9/2023 20:50:47 
+ Error al momento de calcular la ultima novedad en camara news 371 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 5/9/2023 20:58:28 
