@@ -2,3 +2,8 @@
  Error al momento de calcular la ultima novedad en camara news 424 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 5/9/2023 19:41:19 
  Error al momento de calcular la ultima novedad en camara news 597 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 5/9/2023 20:50:47 
  Error al momento de calcular la ultima novedad en camara news 371 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 5/9/2023 20:58:28 
+ Error al momento de calcular operacion db XTAM0180 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets, fecha: 6/9/2023 9:17:34 
+ Error al momento de calcular la ultima novedad en camara news 424 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 6/9/2023 18:4:34 
+ Error al momento de calcular la ultima novedad en camara news 589 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 6/9/2023 19:4:22 
+ Error al momento de calcular la ultima novedad en camara news 371 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 6/9/2023 20:48:29 
+ Error al momento de calcular la ultima novedad en camara news 590 , el error es: ER_NET_ERROR_ON_WRITE: Got an error writing communication packets,fecha: 6/9/2023 22:2:47 

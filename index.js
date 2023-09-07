@@ -348,7 +348,7 @@ client.on('message', (topic, payload) => {
 })
 
 function operation_db(id_module,telemetry) {
-   //console.log("id_module ", id_module, "  telemetry ",telemetry, "ID ", telemetry.ID);
+   console.log("id_module ", id_module, "  telemetry ",telemetry, "ID ", telemetry.ID);
     
     try {
         //console.log("Operation db",`call calculate_id ("${id_module}")`);
@@ -594,7 +594,7 @@ function insert_xtam_services_news(fk_xtam,telemetria,XTAM,ID,descripcion)
         }
 
         if  (XTAM.Services.FTP===NULLL || XTAM.Services.FTP===UNDEFINNED ) {
-            selectAlarms(fk_xtam,descripcion,"FTP", null,ID)
+            selectAlarms(fk_xtam,descripcion,"Ftp", null,ID)
         }
         if  (XTAM.Services.APACHE===NULLL || XTAM.Services.APACHE===UNDEFINNED ) {
             selectAlarms(fk_xtam,descripcion,"APACHE", null,ID)
@@ -739,7 +739,7 @@ function exec_uptCameras (id_cc, XTAM,telemetria,descripcion,serial)
     dataAlarms.push([id_cc,descripcion,"% carga bateria", telemetria.bat,serial]  )
    } 
    if ( telemetria.red <=  2 ) {
-    dataAlarms.push([id_cc,descripcion,"tipo de red 2g,3g,4g", telemetria.red,serial]  )
+    dataAlarms.push([id_cc,descripcion,"Tipo de red 2g,3g,4g", telemetria.red,serial]  )
    }
 
    
