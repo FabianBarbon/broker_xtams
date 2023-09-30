@@ -11,7 +11,7 @@ const util = require('util');
 let moment = require('moment');
 const fs = require('fs');
 let parseInt = require('parse-int');
-const miutes_insert =  process.env.INSERT_PRODUCCION  //que pasa en el caso de que no reporte           //howMinutes();
+const miutes_insert =  process.env.INSERT_PRODUCCION  ;////que pasa en el caso de que no reporte        2    //howMinutes();
 
 // create a connection variable with the required details (Telemetria),conexion telemetria
 var con = mysql.createConnection({
@@ -91,6 +91,9 @@ function sonTodosValoresNulos(obj) {
     }
     return true; // Si no encontró ningún valor no nulo, retorna true
 }
+
+
+
 
 //insertCamerasinoutRecordings
 function insert_flinoutRecords(tablee,insertCameraNews) {
@@ -209,7 +212,7 @@ function insert_cameras_news(objCameras, trackXtam,numeroCamaras) //
                 camPro_obj.valuue = flOutnValues[index];
                 camPro_obj.datee_serv   = date_server_stamp();
                 camPro_obj.serial = trackXtam.ID
-                //////////////////////////////////////////////////////////
+                
                     insrCameraNews.push(Object.values(cam_obj));
                     insRecorsNews.push(Object.values(rec_obj));
                     insCamsPro.push(Object.values(camPro_obj))
@@ -342,13 +345,15 @@ client.on('message', (topic, payload) => {
         let {telemetria,XTAM,ID } = response
         // llamo a la logica de la base de datos
         operation_db( response.ID , response)  //response.ID    Testt
+        // En tu código, verifica la condición y genera un volcado si es verdadera
+    
     } catch (error) {
         console.log(error);
     }
 })
 
 function operation_db(id_module,telemetry) {
-   console.log("id_module ", id_module, "  telemetry ",telemetry, "ID ", telemetry.ID);
+   //console.log("id_module ", id_module, "  telemetry ",telemetry, "ID ", telemetry.ID);
     
     try {
         //console.log("Operation db",`call calculate_id ("${id_module}")`);
@@ -796,7 +801,7 @@ function addDataAlarms(dataa,id_cc,descripcion,serial) {
 
 function selectAlarms(fk_xtam,sitio,tipo, valor,serial)  {   
     con.query(`SELECT id_alarm, FK_xtam,sitio, tipo,valor,DATE_FORMAT(date (fecha_alarma), '%d/%m/%Y') as fecha ,
-    time(fecha_alarma) as hora,FK_estado , fecha_respuesta  FROM xtam_alarms 
+    time(fecha_alarma) as hora,FK_estado , fecha_respuesta,recurrencia  FROM xtam_alarms 
     WHERE FK_xtam = ${fk_xtam}  and tipo = "${tipo}" 
     order by fecha_alarma desc`,
     (error, results, fields) =>
@@ -808,14 +813,14 @@ function selectAlarms(fk_xtam,sitio,tipo, valor,serial)  {
         if (results.length == 0) {
             console.log("Puede insertar en insertAlarms");
             //insertar 
-            insertAlarms (fk_xtam,sitio,tipo, valor,serial ) 
+            insertAlarms (fk_xtam,sitio,tipo, valor ) //,serial
         }else 
         {
             
             const [dias, horas,minutos] = getHoursDates(results[0].fecha,results[0].hora);
             
             if (  
-                results[0].FK_estado == 1 &&
+                (results[0].FK_estado == 1 || results[0].FK_estado == 2) &&
                 dias >=1  && 
                 (results[0].tipo == "Flujo Entrada#1" || results[0].tipo == "Flujo Entrada#2" || results[0].tipo == "Flujo Entrada#3" || results[0].tipo == "Flujo Entrada#4" 
                 || results[0].tipo == "Flujo Salida#1" || results[0].tipo == "Flujo Salida#2" || results[0].tipo == "Flujo Salida#3" || results[0].tipo == "Flujo Salida#4"
@@ -823,14 +828,15 @@ function selectAlarms(fk_xtam,sitio,tipo, valor,serial)  {
                 || results[0].tipo == "FTP" || results[0].tipo == "APACHE" || results[0].tipo == "Ping C4" || results[0].tipo == "Ping Robustel"  
                 
                 ) 
-                && (results[0].valor== STOP)) 
+                &&  (results[0].valor== STOP)) 
             {
                 //console.log(` dias> ${dias}  tipo>  ${results[0].tipo}  valor>  ${results[0].valor}  `);
-                updateAlarms(results[0].id_alarm,`"Fallo recurrente ${results[0].tipo}, por favor atender el mismo."`)
+                updateAlarms(results[0].id_alarm,`"Fallo recurrente ${results[0].tipo}, por favor atender el mismo."`,`${results[0].recurrencia}`)
             }
 
             if ( 
-                horas  >2   && 
+                //minutos 30
+                minutos  >=1   && 
                 (  results[0].tipo == "Humedad" 
                     || results[0].tipo == "Temperatura Xtam"
                     || results[0].tipo == "Potencia de operación 5v" 
@@ -844,24 +850,33 @@ function selectAlarms(fk_xtam,sitio,tipo, valor,serial)  {
                     || results[0].tipo == "Temperatura Gpu"
                     || results[0].tipo == "Uso Disco1"
                     || results[0].tipo == "Uso Disco2" 
-                ) && results[0].FK_estado == 1 
+                ) && (results[0].FK_estado == 1 || results[0].FK_estado == 2)
             ) {
-                    updateAlarms(results[0].id_alarm,`"Fallo recurrente ${results[0].tipo}, por favor atender el mismo."`)   
+                    updateAlarms(results[0].id_alarm,`"Fallo recurrente ${results[0].tipo}, por favor atender el mismo."`,`${results[0].recurrencia}`)   
             }
             
         }
     });
 }
 
-function insertAlarms ( fk_xtam,sitio,tipo, valor,serial) {
-    con.query( `INSERT INTO xtam_alarms(FK_xtam,sitio,tipo,valor,FK_estado,fecha_alarma,Fk_serial)
+function insertAlarms ( fk_xtam,sitio,tipo, valor) {//,serial
+    console.log("PRUEBE ESTO:: ",`INSERT INTO xtam_alarms(FK_xtam,sitio,tipo,valor,FK_estado,fecha_alarma,vista_usuario)
     VALUES
     (${fk_xtam},
     "${sitio}",
     "${tipo}",
     "${valor}",
     1,
-    "${date_server_stamp()}","${serial}" )`,
+    "${date_server_stamp()}",0 )`  )
+    
+    con.query( `INSERT INTO xtam_alarms(FK_xtam,sitio,tipo,valor,FK_estado,fecha_alarma,vista_usuario)
+    VALUES
+    (${fk_xtam},
+    "${sitio}",
+    "${tipo}",
+    "${valor}",
+    1,
+    "${date_server_stamp()}",0 )`,
     
     function(err, response)
     {
@@ -873,16 +888,21 @@ function insertAlarms ( fk_xtam,sitio,tipo, valor,serial) {
     });
 }
 
-function updateAlarms(id_alarm, observacion) {
-    con.query( `UPDATE xtam_alarms
+function updateAlarms(id_alarm, observacion, recurrencia) {
+  
+    recurrencia = parseInt(recurrencia)+1; 
+    queryy =`UPDATE xtam_alarms
     SET
     observacion = ${observacion},
     FK_estado = 2,
-    puntuacion = 5
-    WHERE id_alarm = ${id_alarm}`, function(err, response)
+    puntuacion = 5,
+    recurrencia=${recurrencia}
+    WHERE id_alarm = ${id_alarm}`
+    
+    con.query( queryy, function(err, response)
     {
         if (err) {
-            saveLog (`Error al momento de actualizar  la novedad en xtam_alarms, el error es: ${err.message},fecha: ${date_server()} `)
+            saveLog (`Error al momento de actualizar  la novedad en xtam_alarms, el error es: ${err.message},query:${queryy},fecha: ${date_server()} `)
         }else {
             console.log('Registros actualizados en xtam_alarms: ' + response.affectedRows);
         }
@@ -891,11 +911,13 @@ function updateAlarms(id_alarm, observacion) {
 
 // obtener fecha y hora 
 function getHoursDates( fecha, hora) {
-    fecha_format = moment(`${fecha} ${hora}`, 'DD/MM/YYYY HH:mm:ss');
-    fecha_server = moment(date_server(), 'DD/MM/YYYY HH:mm:ss');
-    dayss = fecha_server.diff(fecha_format, 'days', true);          //difrenecia en dias
-    hourss = fecha_server.diff(fecha_format, 'hours', true);          //difrenecia en horas
-    minutess = fecha_server.diff(fecha_format, 'minutes', true); // diferencia en minutos
+    //fecha_format = moment(`${fecha} ${hora}`, 'DD/MM/YYYY HH:mm:ss');
+     const fecha_format = moment(`${fecha} ${hora}`, 'DD/MM/YYYY HH:mm:ss');
+
+     const fecha_server = moment(); // No need to pass a format here, it defaults to current date and time
+     const dayss = fecha_server.diff(fecha_format, 'days');
+     const hourss = fecha_server.diff(fecha_format, 'hours');
+     const minutess = fecha_server.diff(fecha_format, 'minutes');
     return [dayss, hourss, minutess];
 }   
 
